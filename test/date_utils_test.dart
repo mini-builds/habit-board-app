@@ -18,43 +18,45 @@ void main() {
     var d = DateTime(2020, 12, 28, 12, 35, 1, 1);
     var result = truncateDate(TimePeriod.day, d);
 
-    expect(result, DateTime(2020, 12, 28));
+    expect(result, DateTime.utc(2020, 12, 28));
   });
 
   test('truncateDate timePeriod == week', () {
     var d = DateTime(2020, 12, 29, 12, 35, 1, 1);
     var result = truncateDate(TimePeriod.week, d);
 
-    expect(result, DateTime(2020, 12, 28));
+    expect(result, DateTime.utc(2020, 12, 28));
 
     var d2 = DateTime(2020, 12, 28, 0, 0, 0, 0);
     var result2 = truncateDate(TimePeriod.week, d2);
 
-    expect(result2, DateTime(2020, 12, 28));
+    expect(result2, DateTime.utc(2020, 12, 28));
   });
 
   test('truncateDate timePeriod == month', () {
     var d = DateTime(2020, 12, 29, 12, 35, 1, 1);
     var result = truncateDate(TimePeriod.month, d);
 
-    expect(result, DateTime(2020, 12, 1));
+    expect(result, DateTime.utc(2020, 12, 1));
 
     var d2 = DateTime(2020, 12, 1, 0, 0, 0, 0);
     var result2 = truncateDate(TimePeriod.month, d2);
 
-    expect(result2, DateTime(2020, 12, 1));
+    expect(result2, DateTime.utc(2020, 12, 1));
   });
 
   test('createDateRange timePeriod == day', () {
-    var start = DateTime(2020, 12, 25, 12, 35, 1, 1);
-    var end = DateTime(2020, 12, 28, 12, 35, 1, 1);
+    var start = DateTime(2020, 10, 28, 12, 35, 1, 1);
+    var end = DateTime(2020, 11, 2, 0, 35, 1, 1);
     var result = createDateRange(TimePeriod.day, start, end);
 
     expect(result, [
-      DateTime(2020, 12, 25),
-      DateTime(2020, 12, 26),
-      DateTime(2020, 12, 27),
-      DateTime(2020, 12, 28)
+      DateTime.utc(2020, 10, 28),
+      DateTime.utc(2020, 10, 29),
+      DateTime.utc(2020, 10, 30),
+      DateTime.utc(2020, 10, 31),
+      DateTime.utc(2020, 11, 1),
+      DateTime.utc(2020, 11, 2),
     ]);
   });
 
@@ -64,11 +66,11 @@ void main() {
     var result = createDateRange(TimePeriod.week, start, end);
 
     expect(result, [
-      DateTime(2020, 11, 30),
-      DateTime(2020, 12, 7),
-      DateTime(2020, 12, 14),
-      DateTime(2020, 12, 21),
-      DateTime(2020, 12, 28)
+      DateTime.utc(2020, 11, 30),
+      DateTime.utc(2020, 12, 7),
+      DateTime.utc(2020, 12, 14),
+      DateTime.utc(2020, 12, 21),
+      DateTime.utc(2020, 12, 28)
     ]);
   });
 
@@ -78,13 +80,13 @@ void main() {
     var result = createDateRange(TimePeriod.month, start, end);
 
     expect(result, [
-      DateTime(2020, 6, 1),
-      DateTime(2020, 7, 1),
-      DateTime(2020, 8, 1),
-      DateTime(2020, 9, 1),
-      DateTime(2020, 10, 1),
-      DateTime(2020, 11, 1),
-      DateTime(2020, 12, 1),
+      DateTime.utc(2020, 6, 1),
+      DateTime.utc(2020, 7, 1),
+      DateTime.utc(2020, 8, 1),
+      DateTime.utc(2020, 9, 1),
+      DateTime.utc(2020, 10, 1),
+      DateTime.utc(2020, 11, 1),
+      DateTime.utc(2020, 12, 1),
     ]);
   });
 }

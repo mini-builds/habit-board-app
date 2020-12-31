@@ -2,14 +2,14 @@ import 'package:habit_board/model.dart';
 
 DateTime truncateDate(TimePeriod timePeriod, DateTime dt) {
   if (timePeriod == TimePeriod.day) {
-    return DateTime(dt.year, dt.month, dt.day);
+    return DateTime.utc(dt.year, dt.month, dt.day);
   }
 
   if (timePeriod == TimePeriod.week) {
-    return DateTime(dt.year, dt.month, dt.day).subtract(Duration(days: dt.weekday - 1));
+    return DateTime.utc(dt.year, dt.month, dt.day).subtract(Duration(days: dt.weekday - 1));
   }
 
-  return DateTime(dt.year, dt.month, dt.day).subtract(Duration(days: dt.day - 1));
+  return DateTime.utc(dt.year, dt.month, dt.day).subtract(Duration(days: dt.day - 1));
 }
 
 List<DateTime> createDateRange(TimePeriod timePeriod, DateTime start, DateTime end) {
@@ -27,7 +27,7 @@ List<DateTime> createDateRange(TimePeriod timePeriod, DateTime start, DateTime e
     }
     if (timePeriod == TimePeriod.month) {
       current = truncateDate(
-          TimePeriod.month, current.add(Duration(days: 32))); // 32 for daylight saving weirdness...
+          TimePeriod.month, current.add(Duration(days: 31)));
     }
   }
 
