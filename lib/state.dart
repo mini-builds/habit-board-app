@@ -6,6 +6,7 @@ import 'package:habit_board/model.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tuple/tuple.dart';
 
 part 'state.g.dart';
 
@@ -21,6 +22,8 @@ class HabitBoardState {
 }
 
 class HabitBoardCubit extends Cubit<HabitBoardState> {
+  List<Tuple2<Board, int>> deletedBoards = List<Tuple2<Board, int>>();
+
   HabitBoardCubit() : super(HabitBoardState([], null));
 
   Future<void> loadState() async {
@@ -70,4 +73,27 @@ class HabitBoardCubit extends Cubit<HabitBoardState> {
   void selectBoard(Board board) {
     emit(HabitBoardState(this.state.boards, board));
   }
+
+  void deleteBoard(Board board) {
+    var index = this.state.boards.indexOf(board);
+    if (index != -1) {
+      deletedBoards.add(Tuple2(board, index));
+      state.boards.removeAt(index);
+      emit(HabitBoardState(state.boards, board));
+    }
+  }
+
+  void undoDeleteBoard(Board board) {
+    var index = deletedBoards.indexWhere((t) => t.item1 == board);
+    if (index != -1) {
+      var t = deletedBoards[index];
+      state.boards.insert(t.item2, t.item1);
+      emit(HabitBoardState(state.boards, board));
+    }
+  }
+
+  void tidyUpDeleteBoard(Board board) {
+    deletedBoards.removeWhere((t) => t.item1 == board);
+  }
+
 }

@@ -199,24 +199,71 @@ class MainPage extends StatelessWidget {
 
           return ListView.builder(
             itemCount: state.boards.length,
-            itemBuilder: (context, index) => ListTile(
-                title: Text(state.boards[index].name),
-                trailing: IconButton(
-                  icon: Icon(
-                    Icons.check,
-                    color: state.boards[index].isDateChecked(DateTime.now())
-                        ? Color(0xffFCEE6D)
-                        : Colors.grey,
-                  ),
-                  onPressed: () {
-                    context.read<HabitBoardCubit>().toggleDate(state.boards[index], DateTime.now());
-                  },
+            itemBuilder: (context, index) => Dismissible(
+              key: Key(state.boards[index].name),
+              background: Container(
+                color: Colors.red,
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: Icon(Icons.delete, color: Colors.black54),
+                    ),
+                    Spacer(),
+                  ],
                 ),
-                onTap: () {
-                  context.read<HabitBoardCubit>().selectBoard(state.boards[index]);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ViewBoardPage()));
-                  print('Board ${state.boards[index].name} was tapped');
-                }),
+              ),
+              secondaryBackground: Container(
+                color: Colors.red,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: Icon(Icons.delete, color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+              child: ListTile(
+                  title: Text(state.boards[index].name),
+                  trailing: IconButton(
+                    icon: Icon(
+                      Icons.check,
+                      color: state.boards[index].isDateChecked(DateTime.now())
+                          ? Color(0xffFCEE6D)
+                          : Colors.grey,
+                    ),
+                    onPressed: () {
+                      context
+                          .read<HabitBoardCubit>()
+                          .toggleDate(state.boards[index], DateTime.now());
+                    },
+                  ),
+                  onTap: () {
+                    context.read<HabitBoardCubit>().selectBoard(state.boards[index]);
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) => ViewBoardPage()));
+                  }),
+              onDismissed: (direction) async {
+                var board = state.boards[index];
+                var cubit = context.read<HabitBoardCubit>();
+                cubit.deleteBoard(board);
+                var closedReason = await Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text("${board.name} deleted"),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      cubit.undoDeleteBoard(board);
+                    },
+                  ),
+                )).closed;
+
+                if (closedReason != SnackBarClosedReason.action) {
+                  cubit.tidyUpDeleteBoard(board);
+                }
+              },
+            ),
           );
         },
       ),
