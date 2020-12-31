@@ -117,11 +117,12 @@ class MainPage extends StatelessWidget {
           }, onSelected: (v) async {
             if (v == 'export') {
               var tempDir = await getTemporaryDirectory();
-              var file = File('${tempDir.path}/stuff.txt');
 
               var dateFormat = DateFormat('yyyy-MM-dd');
 
-              var csvData = ['Board,Date'];
+              var file = File('${tempDir.path}/habitboard-${dateFormat.format(DateTime.now())}.csv');
+
+              var csvData = ['Board,Date,Streak Type,Frequency'];
               var boards = BlocProvider.of<HabitBoardCubit>(context).state.boards;
               boards.forEach((b) => b.entries.forEach((e) => csvData
                   .add('${b.name},${dateFormat.format(e.date)},${b.timePeriod},${b.frequency}')));
