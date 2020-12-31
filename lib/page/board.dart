@@ -13,15 +13,30 @@ class BoardPage extends StatefulWidget {
 }
 
 class _BoardPageState extends State<BoardPage> {
-  TextEditingController controller;
-  TimePeriod timePeriod;
-  TextEditingController frequencyController;
-  var error;
+  TextEditingController _controller;
+  TimePeriod _timePeriod;
+  TextEditingController _frequencyController;
+  String _error;
+  String _frequencyError;
 
   _BoardPageState(Board board) {
-    controller = TextEditingController(text: board == null ? '' : board.name);
-    frequencyController = TextEditingController(text: board == null ? '1' : board.frequency.toString());
-    timePeriod = board == null ? TimePeriod.day : board.timePeriod;
+    _controller = TextEditingController(text: board == null ? '' : board.name);
+    _frequencyController =
+        TextEditingController(text: board == null ? '1' : board.frequency.toString());
+    _timePeriod = board == null ? TimePeriod.day : board.timePeriod;
+  }
+
+  void checkFrequency(String v) {
+    var freq = int.parse(v);
+    if ((_timePeriod == TimePeriod.week || _timePeriod == TimePeriod.month) && freq < 1) {
+      _frequencyError = 'Frequency must be >= 1';
+    } else if (_timePeriod == TimePeriod.week && freq > 7) {
+      _frequencyError = 'Frequency must be <= 7';
+    } else if (_timePeriod == TimePeriod.month && freq > 31) {
+      _frequencyError = 'Frequency must be <= 31';
+    } else {
+      _frequencyError = null;
+    }
   }
 
   @override
@@ -32,15 +47,23 @@ class _BoardPageState extends State<BoardPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.check),
-            onPressed: this.error != null
+            onPressed: _error != null || _frequencyError != null
                 ? null
                 : () {
-                    if (widget.board == null) {
-                      context.read<HabitBoardCubit>().addBoard(Board(controller.text, [], timePeriod, int.parse(frequencyController.text)));
+                    if (_controller.text == '') {
+                      setState(() {
+                        _error = 'A board name can\'t be blank';
+                      });
                     } else {
-                      context.read<HabitBoardCubit>().editBoard(widget.board, controller.text, timePeriod, int.parse(frequencyController.text));
+                      if (widget.board == null) {
+                        context.read<HabitBoardCubit>().addBoard(Board(
+                            _controller.text, [], _timePeriod, _timePeriod == TimePeriod.day ? 1 : int.parse(_frequencyController.text)));
+                      } else {
+                        context.read<HabitBoardCubit>().editBoard(widget.board, _controller.text,
+                            _timePeriod, _timePeriod == TimePeriod.day ? 1 : int.parse(_frequencyController.text));
+                      }
+                      Navigator.pop(context);
                     }
-                    Navigator.pop(context);
                   },
           )
         ],
@@ -57,15 +80,22 @@ class _BoardPageState extends State<BoardPage> {
                   child: Text('Board Name'),
                 ),
                 TextField(
-                  decoration: InputDecoration(hintText: 'Name', errorText: this.error, floatingLabelBehavior: FloatingLabelBehavior.never, hintStyle: TextStyle(color: Colors.white60)),
-                  controller: controller,
+                  decoration: InputDecoration(
+                      hintText: 'Name',
+                      errorText: _error,
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      hintStyle: TextStyle(color: Colors.white60)),
+                  controller: _controller,
                   onChanged: (v) {
                     setState(() {
                       if (state.boards.any((element) =>
-                          element.name.toLowerCase() == v.toLowerCase() && element != widget.board)) {
-                        this.error = 'A board with name $v already exists.';
+                          element.name.toLowerCase() == v.toLowerCase() &&
+                          element != widget.board)) {
+                        _error = 'A board with name $v already exists';
+                      } else if (v == '') {
+                        _error = 'A board name can\'t be blank';
                       } else {
-                        this.error = null;
+                        _error = null;
                       }
                     });
                   },
@@ -76,58 +106,52 @@ class _BoardPageState extends State<BoardPage> {
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
-
                   decoration: BoxDecoration(
                     color: Color(0xff25282F),
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                   child: DropdownButton<TimePeriod>(
-                      value: timePeriod,
+                      value: _timePeriod,
                       underline: Container(),
                       dropdownColor: Color(0xff25282F),
-                      items: TimePeriod.values.map((tp) => DropdownMenuItem<TimePeriod>(
-                            value: tp,
-                            child: Text(tp.toString().replaceAll('TimePeriod.', ''), style: TextStyle(color: Colors.white),),
-                          )).toList(),
+                      items: TimePeriod.values
+                          .map((tp) => DropdownMenuItem<TimePeriod>(
+                                value: tp,
+                                child: Text(
+                                  tp.toString().replaceAll('TimePeriod.', ''),
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ))
+                          .toList(),
                       onChanged: (v) {
                         setState(() {
-                          timePeriod = v;
+                          _timePeriod = v;
+                          checkFrequency(_frequencyController.text);
                         });
                       }),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Frequency'),
-                ),
-                TextField(
-                  decoration: InputDecoration(labelText: 'Frequency', floatingLabelBehavior: FloatingLabelBehavior.never),
-                  controller: frequencyController,
-                  keyboardType: TextInputType.number,
-                  onChanged: (v) {
-                    if (timePeriod == TimePeriod.day) {
-                      frequencyController.text = '1';
-                    }
-
-                    var freq = int.parse(v);
-                    if (timePeriod == TimePeriod.week) {
-                      if (freq < 1) {
-                        frequencyController.text = '1';
-                      }
-                      if (freq > 7) {
-                        frequencyController.text = '7';
-                      }
-                    }
-
-                    if (timePeriod == TimePeriod.month) {
-                      if (freq < 1) {
-                        frequencyController.text = '1';
-                      }
-                      if (freq > 31) {
-                        frequencyController.text = '31';
-                      }
-                    }
-                  },
-                ),
+                _timePeriod != TimePeriod.day
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text('Frequency'),
+                      )
+                    : Container(),
+                _timePeriod != TimePeriod.day
+                    ? TextField(
+                        decoration: InputDecoration(
+                            hintText: 'Frequency',
+                            errorText: _frequencyError,
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                            hintStyle: TextStyle(color: Colors.white60)),
+                        controller: _frequencyController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (v) {
+                          setState(() {
+                            checkFrequency(v);
+                          });
+                        },
+                      )
+                    : Container(),
               ],
             ),
           );
