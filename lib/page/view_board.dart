@@ -220,17 +220,20 @@ class _ViewBoardPageState extends State<ViewBoardPage> {
             ),
           );
         }),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: pageIndex,
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Month'),
-            BottomNavigationBarItem(icon: Icon(Icons.view_comfortable), label: 'Year')
-          ],
-          onTap: (p) {
-            setState(() {
-              pageIndex = p;
-            });
-          },
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.only(bottom: 96.0),
+          child: BottomNavigationBar(
+            currentIndex: pageIndex,
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Month'),
+              BottomNavigationBarItem(icon: Icon(Icons.view_comfortable), label: 'Year')
+            ],
+            onTap: (p) {
+              setState(() {
+                pageIndex = p;
+              });
+            },
+          ),
         ),
       );
     });

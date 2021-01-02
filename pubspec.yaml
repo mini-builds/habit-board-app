@@ -37,6 +37,7 @@ dependencies:
   intl: ^0.16.1
   file_picker: ^2.1.4
   tuple: ^1.0.3
+  firebase_admob: ^0.10.3
 
 dev_dependencies:
   flutter_test:

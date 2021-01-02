@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_board/model.dart';
@@ -24,6 +25,25 @@ class HabitBoardApp extends StatefulWidget {
 }
 
 class _HabitBoardAppState extends State<HabitBoardApp> with WidgetsBindingObserver {
+  static MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+    keywords: <String>['flutterio', 'beautiful apps'],
+    contentUrl: 'https://flutter.io',
+    childDirected: false,
+    testDevices: <String>[], // Android emulators are considered test devices
+  );
+
+  BannerAd myBanner = BannerAd(
+    // Replace the testAdUnitId with an ad unit id from the AdMob dash.
+    // https://developers.google.com/admob/android/test-ads
+    // https://developers.google.com/admob/ios/test-ads
+    adUnitId: BannerAd.testAdUnitId,
+    size: AdSize.smartBanner,
+    targetingInfo: targetingInfo,
+    listener: (MobileAdEvent event) {
+      print("BannerAd event is $event");
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -71,6 +91,14 @@ class _HabitBoardAppState extends State<HabitBoardApp> with WidgetsBindingObserv
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    myBanner
+      ..load()
+      ..show(
+        anchorOffset: 0.0,
+        horizontalCenterOffset: 0.0,
+        anchorType: AnchorType.bottom,
+      );
   }
 
   @override
@@ -121,7 +149,8 @@ class MainPage extends StatelessWidget {
 
               var dateFormat = DateFormat('yyyy-MM-dd');
 
-              var file = File('${tempDir.path}/habitboard-${dateFormat.format(DateTime.now())}.csv');
+              var file =
+                  File('${tempDir.path}/habitboard-${dateFormat.format(DateTime.now())}.csv');
 
               var csvData = ['Board,Date,Streak Type,Frequency'];
               var boards = BlocProvider.of<HabitBoardCubit>(context).state.boards;
@@ -176,22 +205,11 @@ class MainPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      Container(
-                        height: 16.0,
-                      ),
-                      Text(
-                        'No boards found',
-                        textAlign: TextAlign.center,
-                        textScaleFactor: 1.2,
-                      ),
-                      Container(
-                        height: 16.0,
-                      ),
-                      Text(
-                        'Click \'+\' to add a board',
-                        textAlign: TextAlign.center,
-                        textScaleFactor: 1.2,
-                      ),
+                      Container(height: 16.0),
+                      Text('No boards found', textAlign: TextAlign.center, textScaleFactor: 1.2),
+                      Container(height: 16.0),
+                      Text('Click \'+\' to add a board',
+                          textAlign: TextAlign.center, textScaleFactor: 1.2),
                     ],
                   ),
                 ),
@@ -199,72 +217,79 @@ class MainPage extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
-            itemCount: state.boards.length,
-            itemBuilder: (context, index) => Dismissible(
-              key: Key(state.boards[index].name),
-              background: Container(
-                color: Colors.red,
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Icon(Icons.delete, color: Colors.black54),
-                    ),
-                    Spacer(),
-                  ],
-                ),
-              ),
-              secondaryBackground: Container(
-                color: Colors.red,
-                child: Row(
-                  children: [
-                    Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: Icon(Icons.delete, color: Colors.black54),
-                    ),
-                  ],
-                ),
-              ),
-              child: ListTile(
-                  title: Text(state.boards[index].name),
-                  trailing: IconButton(
-                    icon: Icon(
-                      Icons.check,
-                      color: state.boards[index].isDateChecked(DateTime.now())
-                          ? Color(0xffFCEE6D)
-                          : Colors.grey,
-                    ),
-                    onPressed: () {
-                      context
-                          .read<HabitBoardCubit>()
-                          .toggleDate(state.boards[index], DateTime.now());
-                    },
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 92.0),
+            child: ListView.builder(
+              itemCount: state.boards.length,
+              itemBuilder: (context, index) => Dismissible(
+                key: Key(state.boards[index].name),
+                background: Container(
+                  color: Colors.red,
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Icon(Icons.delete, color: Colors.black54),
+                      ),
+                      Spacer(),
+                    ],
                   ),
-                  onTap: () {
-                    context.read<HabitBoardCubit>().selectBoard(state.boards[index]);
-                    Navigator.push(
-                        context, MaterialPageRoute(builder: (context) => ViewBoardPage()));
-                  }),
-              onDismissed: (direction) async {
-                var board = state.boards[index];
-                var cubit = context.read<HabitBoardCubit>();
-                cubit.deleteBoard(board);
-                var closedReason = await Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text("${board.name} deleted"),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () {
-                      cubit.undoDeleteBoard(board);
-                    },
+                ),
+                secondaryBackground: Container(
+                  color: Colors.red,
+                  child: Row(
+                    children: [
+                      Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: Icon(Icons.delete, color: Colors.black54),
+                      ),
+                    ],
                   ),
-                )).closed;
+                ),
+                child: ListTile(
+                    title: Text(state.boards[index].name),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.check,
+                        color: state.boards[index].isDateChecked(DateTime.now())
+                            ? Color(0xffFCEE6D)
+                            : Colors.grey,
+                      ),
+                      onPressed: () {
+                        context
+                            .read<HabitBoardCubit>()
+                            .toggleDate(state.boards[index], DateTime.now());
+                      },
+                    ),
+                    onTap: () {
+                      context.read<HabitBoardCubit>().selectBoard(state.boards[index]);
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => ViewBoardPage()));
+                    }),
+                onDismissed: (direction) async {
+                  var board = state.boards[index];
+                  var cubit = context.read<HabitBoardCubit>();
+                  cubit.deleteBoard(board);
+                  var closedReason = await Scaffold.of(context)
+                      .showSnackBar(SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(bottom: 92),
+                        content: Text("${board.name} deleted"),
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () {
+                            cubit.undoDeleteBoard(board);
+                          },
+                        ),
+                      ))
+                      .closed;
 
-                if (closedReason != SnackBarClosedReason.action) {
-                  cubit.tidyUpDeleteBoard(board);
-                }
-              },
+                  if (closedReason != SnackBarClosedReason.action) {
+                    cubit.tidyUpDeleteBoard(board);
+                  }
+                },
+              ),
             ),
           );
         },
