@@ -28,6 +28,7 @@ class _HabitBoardAppState extends State<HabitBoardApp> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: Color(0xff29323F),
         appBarTheme: AppBarTheme(color: Color(0xff191E26)),
