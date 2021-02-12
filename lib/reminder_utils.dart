@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:habit_board/date_utils.dart';
 import 'package:habit_board/model.dart';
 import 'package:habit_board/state.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,7 +13,7 @@ Future<void> createNotification(id) async {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings(
-      'ic_launcher_foreground');
+      'notification_icon');
   final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,);
   flutterLocalNotificationsPlugin.initialize(initializationSettings);
@@ -40,7 +41,7 @@ Future<void> createNotification(id) async {
     if (board != null && !board.isDateChecked(DateTime.now())) {
       if (board.timePeriod == TimePeriod.day || board.reminderDays.contains(DateTime.now().weekday)) {
         flutterLocalNotificationsPlugin.show(
-            id, ' \'${board.name}\'', 'Id: $id ${board.name}', platformChannelSpecifics, payload: board.id);
+            id, '${board.name}', 'Keep your streak going 🔥 ${calculateStreak(board.timePeriod, board.frequency, DateTime.now(), board.entries.map((e) => e.date).toList())}', platformChannelSpecifics, payload: board.id);
       }
     }
   }
