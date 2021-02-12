@@ -4,6 +4,7 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:habit_board/date_utils.dart';
 import 'package:habit_board/model.dart';
 import 'package:habit_board/page/board.dart';
 import 'package:habit_board/page/view_board.dart';
@@ -225,8 +226,10 @@ class MainPage extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 92.0),
             child: ListView.builder(
               itemCount: state.boards.length,
-              itemBuilder: (context, index) => Dismissible(
-                key: Key(state.boards[index].name),
+              itemBuilder: (context, index) {
+                var board = state.boards[index];
+                return Dismissible(
+                key: Key(board.name),
                 background: Container(
                   color: Colors.red,
                   child: Row(
@@ -252,27 +255,33 @@ class MainPage extends StatelessWidget {
                   ),
                 ),
                 child: ListTile(
-                    title: Text(state.boards[index].name),
+                    title: Row(
+                      mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(board.name),
+                          Spacer(),
+                          Icon(Icons.local_fire_department, color: Colors.orange, size: 12.0,),
+                       Text("  ${calculateStreak(board.timePeriod, board.frequency, DateTime.now(), board.entries.map((e) => e.date).toList())}", style: TextStyle(color: Colors.white))
+                    ]),
                     trailing: IconButton(
                       icon: Icon(
                         Icons.check,
-                        color: state.boards[index].isDateChecked(DateTime.now())
+                        color: board.isDateChecked(DateTime.now())
                             ? Color(0xffFCEE6D)
                             : Colors.grey,
                       ),
                       onPressed: () {
                         context
                             .read<HabitBoardCubit>()
-                            .toggleDate(state.boards[index], DateTime.now());
+                            .toggleDate(board, DateTime.now());
                       },
                     ),
                     onTap: () {
-                      context.read<HabitBoardCubit>().selectBoard(state.boards[index]);
+                      context.read<HabitBoardCubit>().selectBoard(board);
                       Navigator.push(
                           context, MaterialPageRoute(builder: (context) => ViewBoardPage()));
                     }),
                 onDismissed: (direction) async {
-                  var board = state.boards[index];
                   var cubit = context.read<HabitBoardCubit>();
                   cubit.deleteBoard(board);
                   var closedReason = await Scaffold.of(context)
@@ -293,7 +302,8 @@ class MainPage extends StatelessWidget {
                     cubit.tidyUpDeleteBoard(board);
                   }
                 },
-              ),
+              );
+              },
             ),
           );
         },

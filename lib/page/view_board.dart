@@ -41,6 +41,7 @@ class _ViewBoardPageState extends State<ViewBoardPage> {
           var currentStreak = calculateStreak(state.selectedBoard.timePeriod,
               state.selectedBoard.frequency, DateTime.now(), dateTimes);
           var width = MediaQuery.of(context).size.width;
+          var today = DateTime.now();
 
           return SingleChildScrollView(
             child: Column(
@@ -88,6 +89,8 @@ class _ViewBoardPageState extends State<ViewBoardPage> {
                                 child: Text(
                                   '${date.day}',
                                   style: TextStyle(
+                                    fontWeight: date.day == today.day && date.month == today.month && date.year == today.year ? FontWeight.w900 : FontWeight.normal,
+                                    fontSize: date.day == today.day && date.month == today.month && date.year == today.year ? 16.0 : 12.0,
                                       color: date.month == currentMonth
                                           ? dateChecked
                                               ? Colors.black

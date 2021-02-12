@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_board/model.dart';
+import 'package:habit_board/reminder_utils.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,6 +29,7 @@ class HabitBoardCubit extends Cubit<HabitBoardState> {
       var stateString = await stateFile.readAsString();
       var state = HabitBoardState.fromJson(jsonDecode(stateString));
       emit(state);
+      state.boards.forEach((board) => scheduleReminder(board));
     }
   }
 
