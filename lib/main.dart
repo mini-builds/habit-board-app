@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,11 +13,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 
-void main() {
+Future<void> main() async {
+
   runApp(BlocProvider(
     create: (BuildContext context) => HabitBoardCubit()..loadState(),
     child: HabitBoardApp(),
   ));
+  await AndroidAlarmManager.initialize();
 }
 
 class HabitBoardApp extends StatefulWidget {
@@ -170,18 +173,19 @@ class MainPage extends StatelessWidget {
                 var lines = (await file.readAsString()).split('\n');
                 Map<String, Board> boardMap = Map.fromIterable(
                     BlocProvider.of<HabitBoardCubit>(context).state.boards,
-                    key: (e) => e.name,
+                    key: (e) => e.id,
                     value: (e) => e);
                 var dateFormat = DateFormat('yyyy-MM-dd');
                 for (int i = 1; i < lines.length; i++) {
                   var parts = lines[i].split(',');
-                  var boardName = parts[0];
-                  var date = dateFormat.parse(parts[1]);
-                  var timePeriod = TimePeriod.values.singleWhere((t) => parts[2] == t.toString());
-                  var frequency = int.parse(parts[3]);
+                  var id = parts[0];
+                  var boardName = parts[1];
+                  var date = dateFormat.parse(parts[2]);
+                  var timePeriod = TimePeriod.values.singleWhere((t) => parts[3] == t.toString());
+                  var frequency = int.parse(parts[4]);
 
                   boardMap.putIfAbsent(boardName, () {
-                    var board = Board(boardName, [], timePeriod, frequency);
+                    var board = Board(id, boardName, [], timePeriod, frequency, false, '09:00', []);
                     BlocProvider.of<HabitBoardCubit>(context).addBoard(board);
                     return board;
                   });

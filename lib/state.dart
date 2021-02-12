@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_board/model.dart';
 
@@ -9,17 +10,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tuple/tuple.dart';
 
 part 'state.g.dart';
-
-@JsonSerializable(nullable: true)
-class HabitBoardState {
-  final List<Board> boards;
-  final Board selectedBoard;
-
-  HabitBoardState(this.boards, this.selectedBoard);
-
-  factory HabitBoardState.fromJson(Map<String, dynamic> json) => _$HabitBoardStateFromJson(json);
-  Map<String, dynamic> toJson() => _$HabitBoardStateToJson(this);
-}
 
 class HabitBoardCubit extends Cubit<HabitBoardState> {
   List<Tuple2<Board, int>> deletedBoards = List<Tuple2<Board, int>>();
@@ -54,15 +44,18 @@ class HabitBoardCubit extends Cubit<HabitBoardState> {
     print('Saved state');
   }
 
-  void addBoard(Board board) =>
-      emit(HabitBoardState(this.state.boards..add(board), this.state.selectedBoard));
+  void addBoard(Board board) {
+    emit(HabitBoardState(this.state.boards..add(board), this.state.selectedBoard));
+    saveState();
+  }
 
-  void editBoard(Board board, String name, TimePeriod timePeriod, int frequency) {
+  void editBoard(Board board, String name, TimePeriod timePeriod, int frequency, bool reminderEnabled, String reminderTime, List<int> reminderDays) {
     var index = this.state.boards.indexOf(board);
-    var editedBoard = Board(name, board.entries, timePeriod, frequency);
+    var editedBoard = Board(board.id, name, board.entries, timePeriod, frequency, reminderEnabled, reminderTime, reminderDays);
     this.state.boards[index] = editedBoard;
     emit(HabitBoardState(
         this.state.boards, this.state.selectedBoard == board ? editedBoard : this.state.selectedBoard));
+    saveState();
   }
 
   void toggleDate(Board board, DateTime date) {
@@ -96,4 +89,15 @@ class HabitBoardCubit extends Cubit<HabitBoardState> {
     deletedBoards.removeWhere((t) => t.item1 == board);
   }
 
+}
+
+@JsonSerializable(nullable: true)
+class HabitBoardState {
+  final List<Board> boards;
+  final Board selectedBoard;
+
+  HabitBoardState(this.boards, this.selectedBoard);
+
+  factory HabitBoardState.fromJson(Map<String, dynamic> json) => _$HabitBoardStateFromJson(json);
+  Map<String, dynamic> toJson() => _$HabitBoardStateToJson(this);
 }

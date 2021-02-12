@@ -22,7 +22,7 @@ void main() {
       for (var ei = 0; ei < 1000; ei++) {
         entries.add(Entry(DateTime.now().subtract(Duration(days: ei))));
       }
-      boards.add(Board('Habit #$bi', entries, TimePeriod.month, 4));
+      boards.add(Board('id', 'Habit #$bi', entries, TimePeriod.month, 4, false, '09:00', []));
     }
 
     var state = HabitBoardState(boards, null);

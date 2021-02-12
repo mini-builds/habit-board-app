@@ -8,20 +8,28 @@ part of 'model.dart';
 
 Board _$BoardFromJson(Map<String, dynamic> json) {
   return Board(
+    json['id'] as String,
     json['name'] as String,
     (json['entries'] as List)
         .map((e) => Entry.fromJson(e as Map<String, dynamic>))
         .toList(),
     _$enumDecode(_$TimePeriodEnumMap, json['timePeriod']),
     json['frequency'] as int,
+    json['reminderEnabled'] as bool,
+    json['reminderTime'] as String,
+    (json['reminderDays'] as List).map((e) => e as int).toList(),
   );
 }
 
 Map<String, dynamic> _$BoardToJson(Board instance) => <String, dynamic>{
+      'id': instance.id,
       'name': instance.name,
       'entries': instance.entries,
       'timePeriod': _$TimePeriodEnumMap[instance.timePeriod],
       'frequency': instance.frequency,
+      'reminderEnabled': instance.reminderEnabled,
+      'reminderTime': instance.reminderTime,
+      'reminderDays': instance.reminderDays,
     };
 
 T _$enumDecode<T>(
